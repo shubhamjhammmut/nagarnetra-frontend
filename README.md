@@ -67,34 +67,17 @@ NagarNetra is an AI-driven civic engagement platform that enables citizens to re
 
 ---
 
-## 📁 Project Structure
-frontend/
-│
-├── src/
-│ ├── components/ # Reusable UI components
-│ ├── pages/ # Home, Report Issue, Track Issue
-│ ├── services/ # API calls
-│ ├── hooks/ # Custom hooks
-│ ├── utils/ # Helper utilities
-│ ├── App.tsx
-│ └── main.tsx
-│
-├── public/
-├── .env
-├── index.html
-├── package.json
-└── vite.config.ts
 
-▶️ Run the Project Locally
+### ▶️ Run the Project Locally
 git clone https://github.com/your-username/nagarnetra-frontend.git
 cd nagarnetra-frontend
 npm install
 npm run dev
 
-📍 App runs at:
+### 📍 App runs at:
 http://localhost:5173
 
-🏗️ Build for Production
+### 🏗️ Build for Production
 npm run build
 npm run preview
 
