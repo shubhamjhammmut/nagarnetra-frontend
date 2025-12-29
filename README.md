@@ -69,15 +69,15 @@ NagarNetra is an AI-driven civic engagement platform that enables citizens to re
 
 
 ### ▶️ Run the Project Locally
-git clone https://github.com/your-username/nagarnetra-frontend.git
-cd nagarnetra-frontend
-npm install
-npm run dev
+- git clone https://github.com/your-username/nagarnetra-frontend.git
+- cd nagarnetra-frontend
+- npm install
+- npm run dev
 
 ### 📍 App runs at:
-http://localhost:5173
+- http://localhost:5173
 
 ### 🏗️ Build for Production
-npm run build
-npm run preview
+- npm run build
+- npm run preview
 
