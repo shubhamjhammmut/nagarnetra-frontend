@@ -5,7 +5,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import logoImage from "figma:asset/7c4083828d48eb428c4a638e45ca05fe81ab6548.png";
+import logoImage from "../assets/logo.png";
 
 type Page = "home" | "report" | "track" | "admin" | "profile";
 

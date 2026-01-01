@@ -1,7 +1,7 @@
 import { Camera, Search, Zap, CheckCircle, Shield, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { WelcomeBanner } from './WelcomeBanner';
-import logoImage from 'figma:asset/7c4083828d48eb428c4a638e45ca05fe81ab6548.png';
+import logoImage from "../assets/logo.png";
 
 type Page = 'home' | 'report' | 'track' | 'admin' | 'profile';
 

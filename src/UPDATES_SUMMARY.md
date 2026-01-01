@@ -12,7 +12,7 @@
 - AuthPage: Login screen with professional logo
 
 **Implementation:**
-- Using: `figma:asset/7c4083828d48eb428c4a638e45ca05fe81ab6548.png`
+- Using: ../assets/logo.png
 - Consistent sizing and styling across all components
 - Professional blue color scheme (#2563EB)
 
