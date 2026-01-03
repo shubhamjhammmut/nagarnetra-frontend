@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 
+// 🔐 Firebase configuration (unchanged)
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -12,8 +12,14 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// 🔥 Initialize Firebase ONCE
 const app = initializeApp(firebaseConfig);
 
+// ✅ IMPORTANT: bind Auth to THIS app instance
 export const auth = getAuth(app);
+
+// ✅ Firestore bound to same app
 export const db = getFirestore(app);
-export const storage = getStorage(app);
+
+// (optional but safe for debugging)
+export default app;

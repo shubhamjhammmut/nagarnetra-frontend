@@ -12,50 +12,31 @@ import { db } from "./firebase";
 /* =====================================================
    ADD NEW ISSUE (FROM ReportIssuePage)
    ===================================================== */
-export const addIssue = async ({
-  title,
-  description,
-  latitude,
-  longitude,
-  urgency,
-  urgencyScore,
-  aiAnalysis,
-  votes,
-  status,
-  userEmail,
-}) => {
-  try {
-    const docRef = await addDoc(collection(db, "issues"), {
-      // 🔑 CORE FIELDS
-      issueType: title,
-      description,
-      latitude,
-      longitude,
+export async function addIssue(issue) {
+  // 🔥 SANITIZE ALL FIELDS (Firestore-safe)
+  const sanitizedIssue = {
+    issueType: issue.issueType ?? "Civic Issue",
+    description: issue.description ?? "No description provided",
+    urgencyScore:
+      typeof issue.urgencyScore === "number"
+        ? issue.urgencyScore
+        : 1,
+    aiAnalysis: issue.aiAnalysis ?? "",
+    latitude:
+      typeof issue.latitude === "number"
+        ? issue.latitude
+        : 0,
+    longitude:
+      typeof issue.longitude === "number"
+        ? issue.longitude
+        : 0,
+    userEmail: issue.userEmail ?? "unknown",
+    status: issue.status ?? "open",
+    createdAt: serverTimestamp(),
+  };
 
-      // 🔥 AI + PRIORITY
-      urgency,
-      urgencyScore,
-      aiAnalysis,
-
-      // 🔥 TRACKING
-      votes: votes ?? 1,
-      status: status ?? "open",
-
-      // ✅ IMPORTANT: SAVE BOTH
-      createdBy: userEmail,   // used internally
-      userEmail: userEmail,   // used by TrackIssuesPage
-
-      // ⏱ TIMESTAMPS
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    return docRef.id;
-  } catch (error) {
-    console.error("❌ Error adding issue:", error);
-    throw error;
-  }
-};
+  return await addDoc(collection(db, "issues"), sanitizedIssue);
+}
 
 /* =====================================================
    GET ALL ISSUES (ADMIN / MAP / HEATMAP)

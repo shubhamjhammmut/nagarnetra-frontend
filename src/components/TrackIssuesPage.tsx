@@ -144,7 +144,7 @@ export function TrackIssuesPage({
           <div className="flex gap-2">
             <button
               onClick={() => setLang("en")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded-xs ${
                 lang === "en"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200"
@@ -154,7 +154,7 @@ export function TrackIssuesPage({
             </button>
             <button
               onClick={() => setLang("hi")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded-xs text-center ${
                 lang === "hi"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200"

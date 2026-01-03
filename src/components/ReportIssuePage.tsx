@@ -9,6 +9,8 @@ import { GoogleMapsPicker } from "./GoogleMapsPicker";
 import { calculateUrgency } from "../utils/urgencyCalculator";
 import { addIssue } from "../firebase/issueService";
 import DetectionCanvas from "./DetectionCanvas";
+import { analyzeIssueWithAI } from "../services/aiService";
+import { getAuth } from "firebase/auth";
 
 /* ================= UTILS ================= */
 
@@ -53,10 +55,9 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
   const [detectedIssue, setDetectedIssue] = useState("");
   const [detections, setDetections] = useState<any[]>([]);
 
-  // Gemini AI text
   const [aiDescription, setAiDescription] = useState("");
   const [aiWhyMatters, setAiWhyMatters] = useState("");
-  const [severityLevel, setSeverityLevel] = useState("");
+  const [severityLevel, setSeverityLevel] = useState("Low");
 
   const [urgencyLevel, setUrgencyLevel] = useState("");
   const [urgencyScore, setUrgencyScore] = useState(0);
@@ -74,8 +75,9 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* =====================================================
-     STEP 1️⃣ IMAGE UPLOAD → BACKEND AI
+     STEP 1️⃣ IMAGE UPLOAD → DETECTION BACKEND
      ===================================================== */
+
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -106,7 +108,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
       setDetections(data.detections || []);
       setDetectedIssue(data.primary_issue || "Civic Issue");
 
-      // 🔥 GEMINI AI DATA
       setAiDescription(data.ai?.description_en || "");
       setAiWhyMatters(data.ai?.why_it_matters || "");
       setSeverityLevel(data.ai?.severity_level || "Low");
@@ -123,6 +124,7 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
   /* =====================================================
      STEP 2️⃣ LOCATION → URGENCY + DUPLICATE
      ===================================================== */
+
   const handleLocationSelect = async (loc: {
     address: string;
     latitude: number;
@@ -132,7 +134,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
 
     if (!uploadedImage || !detectedIssue) return;
 
-    // 🔹 Urgency (text model)
     const urgency = await calculateUrgency({
       issueType: detectedIssue,
       location: loc.address,
@@ -143,7 +144,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
     setUrgencyLevel(urgency.level);
     setUrgencyScore(urgency.score);
 
-    // 🔹 Duplicate check
     try {
       const formData = new FormData();
       formData.append("image", uploadedImage);
@@ -170,33 +170,69 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
   };
 
   /* =====================================================
-     STEP 3️⃣ SUBMIT → FIRESTORE
+     STEP 3️⃣ SUBMIT → GEMINI + FIRESTORE
      ===================================================== */
+
   const handleSubmit = async () => {
-    if (!location.address || !urgencyLevel) {
-      alert("Please complete all steps");
+    const auth = getAuth();
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser) {
+      alert("Please log in to submit an issue");
       return;
     }
 
-    setIsSubmitting(true);
+    if (!uploadedImage) return;
 
     try {
+      setIsSubmitting(true);
+
+      const auth = getAuth();
+      const firebaseUser = auth.currentUser;
+
+      if (!firebaseUser) {
+        throw new Error("User not authenticated");
+      }
+
+      const aiData = await analyzeIssueWithAI(uploadedImage);
+
       await addIssue({
-        title: detectedIssue,
-        description: aiDescription,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        urgency: urgencyLevel,
-        urgencyScore,
-        aiAnalysis: aiWhyMatters,
-        votes: voteCount ?? 1,
+        issueType:
+          aiData.issueType ??
+          detectedIssue ??
+          "Civic Issue",
+
+        description:
+          aiDescription ??
+          aiData.description ??
+          "No description provided",
+
+        urgencyScore:
+          urgencyScore > 0
+            ? urgencyScore
+            : aiData.urgencyScore ?? 1,
+
+        aiAnalysis:
+          aiData.aiAnalysis ??
+          "AI analysis unavailable",
+
+        latitude:
+          location.latitude ?? 0,
+
+        longitude:
+          location.longitude ?? 0,
+
+        userEmail:
+          firebaseUser.email ?? "unknown",
+
         status: "open",
-        userEmail: user.email,
       });
 
+
       setIsSubmitted(true);
-    } catch (err) {
-      console.error(err);
+
+    } catch (error) {
+      console.error("Issue submission failed:", error);
       alert("Failed to submit issue");
     } finally {
       setIsSubmitting(false);
@@ -220,7 +256,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
         ) : (
           <div className="bg-white rounded-xl p-8 space-y-6 shadow">
 
-            {/* IMAGE UPLOAD */}
             {!previewUrl ? (
               <label className="border-2 border-dashed p-12 block text-center cursor-pointer rounded-lg hover:bg-gray-50">
                 <input
@@ -239,16 +274,12 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
               />
             )}
 
-            {/* ISSUE CARD */}
             {isAnalyzed && (
               <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
-
-                {/* HEADER */}
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold flex gap-2 items-center">
+                  <h3 className="text-lg font-semibold">
                     🏙️ {detectedIssue}
                   </h3>
-
                   <span
                     className={`px-3 py-1 rounded-full text-xs border ${severityStyles[severityLevel]}`}
                   >
@@ -256,7 +287,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
                   </span>
                 </div>
 
-                {/* WHY THIS MATTERS */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm font-semibold text-blue-800 mb-1">
                     🤖 Why this matters
@@ -266,22 +296,15 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
                   </p>
                 </div>
 
-                {/* EDIT DESCRIPTION */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-1 block">
-                    ✏️ Edit description (optional)
-                  </label>
-                  <textarea
-                    value={aiDescription}
-                    onChange={(e) => setAiDescription(e.target.value)}
-                    rows={4}
-                    className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
+                <textarea
+                  value={aiDescription}
+                  onChange={(e) => setAiDescription(e.target.value)}
+                  rows={4}
+                  className="w-full border rounded-lg p-3 text-sm"
+                />
               </div>
             )}
 
-            {/* DUPLICATE */}
             {duplicateIssue && (
               <div className="border border-yellow-300 bg-yellow-50 p-3 rounded">
                 <AlertCircle className="inline w-4 h-4 mr-2 text-yellow-600" />
@@ -290,7 +313,6 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
               </div>
             )}
 
-            {/* VOTES */}
             {voteCount !== null && (
               <div className="flex items-center gap-3">
                 <ThumbsUp />
@@ -298,19 +320,16 @@ export function ReportIssuePage({ user }: ReportIssuePageProps) {
               </div>
             )}
 
-            {/* MAP */}
             {isAnalyzed && (
               <GoogleMapsPicker onLocationSelect={handleLocationSelect} />
             )}
 
-            {/* URGENCY */}
             {urgencyLevel && (
               <div className="border p-3 rounded bg-gray-50">
                 <strong>Urgency:</strong> {urgencyLevel} (Score: {urgencyScore})
               </div>
             )}
 
-            {/* SUBMIT */}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !urgencyLevel}
