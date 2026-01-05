@@ -217,7 +217,7 @@ export function AdminDashboard() {
               <option>Issue Resolved</option>
             </select>
            <a
-  href={`http://localhost:8000/admin/issue/${selectedIssue.id}/pdf`}
+  href={`https://nagarnetra-backend-production.up.railway.app/admin/issue/${selectedIssue.id}/pdf`}
   target="_blank"
   rel="noopener noreferrer"
   className="block w-full text-center bg-green-600 text-white py-2 rounded mb-3 hover:bg-green-700"

@@ -24,7 +24,7 @@ const ReportIssuePage: React.FC = () => {
         description || "garbage overflowing near road"
       );
 
-      const response = await fetch("http://127.0.0.1:8000/detect", {
+      const response = await fetch("https://nagarnetra-backend-production.up.railway.app/detect", {
         method: "POST",
         body: formData,
       });

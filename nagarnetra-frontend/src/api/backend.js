@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "https://nagarnetra-backend-production.up.railway.app/";
 
 export async function detectIssue(description) {
   const res = await fetch(`${BASE_URL}/detect`, {
