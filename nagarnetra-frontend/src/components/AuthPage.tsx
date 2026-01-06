@@ -40,12 +40,12 @@ export function AuthPage() {
   // Demo credentials helper
   const fillDemoCredentials = (type: "citizen" | "admin") => {
     if (type === "citizen") {
-      setEmail("citizen@demo.com");
-      setPassword("citizen123");
+      setEmail("jhashubhamkumarsk@gmail.com");
+      setPassword("shubham123");
       setIsAdminLogin(false);
     } else {
-      setEmail("admin@nagarnetra.gov");
-      setPassword("admin123");
+      setEmail("shubham@gmail.com");
+      setPassword("shubham123");
       setIsAdminLogin(true);
     }
   };
